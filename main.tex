@@ -1,0 +1,120 @@
+\documentclass[UTF8]{pkuthss}
+\usepackage[backend = biber, style = caspervector, utf8,
+sorting = none, giveninits = true, sortgiveninits = true
+]{biblatex}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{hyperref}
+\DefineBibliographyStrings{english}{volume= {Vol.}}
+\setlength{\hfuzz}{3pt}
+\ctexset{linestretch=2\ccwd}
+\setlength{\bibitemsep}{3bp}
+\hypersetup{colorlinks=true, allcolors=cyan}
+\usepackage{simpler-wick}
+\usepackage[figuresright]{rotating}
+\usepackage{tikz,tikz-feynman}
+\usepackage{ulem}
+\usepackage{simplewick}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{braket}
+\usepackage{enumitem}
+
+% 用来设置附录中代码的样式
+% \usepackage{listings}
+% \lstset{
+% basicstyle          =   \sffamily,          % 基本代码风格
+% keywordstyle        =   \bfseries,          % 关键字风格
+% commentstyle        =   \rmfamily\itshape,  % 注释的风格，斜体
+% stringstyle         =   \ttfamily,  % 字符串风格
+% flexiblecolumns,                % 别问为什么，加上这个
+% numbers             =   left,   % 行号的位置在左边
+% showspaces          =   false,  % 是否显示空格，显示了有点乱，所以不现实了
+% numberstyle         =   \zihao{-5}\ttfamily,    % 行号的样式，小五号，tt等宽字体
+% showstringspaces    =   false,
+% captionpos          =   t,      % 这段代码的名字所呈现的位置，t指的是top上面
+% frame               =   lrtb,   % 显示边框
+% }
+% \lstdefinestyle{Python}{
+% language        =   Python, % 语言选Python
+% basicstyle      =   \zihao{-5}\ttfamily,
+% numberstyle     =   \zihao{-5}\ttfamily,
+% keywordstyle    =   \color{blue},
+% keywordstyle    =   [2] \color{teal},
+% stringstyle     =   \color{magenta},
+% commentstyle    =   \color{red}\ttfamily,
+% breaklines      =   true,   % 自动换行，建议不要写太长的行
+% columns         =   fixed,  % 如果不加这一句，字间距就不固定，很丑，必须加
+% basewidth       =   0.5em,
+% }
+% \lstdefinestyle{C++}{
+% language        =   C++, % 语言选C++
+% basicstyle      =   \zihao{-5}\ttfamily,
+% numberstyle     =   \zihao{-5}\ttfamily,
+% keywordstyle    =   \color{cyan},
+% keywordstyle    =   [2] \color{teal},
+% stringstyle     =   \color{magenta},
+% commentstyle    =   \color{green}\ttfamily,
+% breaklines      =   true,   % 自动换行，建议不要写太长的行
+% columns         =   fixed,  % 如果不加这一句，字间距就不固定，很丑，必须加
+% basewidth       =   0.5em,
+% }
+% \lstinputlisting[style=C++,caption={\bf apwp.hpp},label={apwp.hpp}]{./code/apwp.hpp} % 一个例子
+
+\pkuthssinfo{
+cthesisname = {博士研究生学位论文}, ethesisname = {Doctor Thesis},
+ctitle = {基于全组态量子蒙特卡洛的核物理第一性原理精确计算},
+etitle = {Full-configuration interaction quantum Monte Carlo},
+cauthor = {胡荣哲},
+eauthor = {Rongzhe Hu},
+studentid = {2101110124},
+date = {二零二六年五月},
+school = {物理学院},
+cmajor = {粒子物理与原子核物理}, emajor = {Particle and Nuclear Physics},
+direction = {理论核结构},
+cmentor = {许甫荣 教授}, ementor = {Prof.\ Furong Xu},
+ckeywords = {第一性原理；量子蒙特卡洛；手征核力}, ekeywords = {\textit{ab initio}, quantum Monte Carlo, chiral nuclear force}
+}
+\normalem
+\addbibresource{reference.bib}
+
+
+\begin{document}
+
+\frontmatter
+\pagestyle{empty}
+\maketitle
+\cleardoublepage
+\input{src-app/copyright}
+\cleardoublepage
+\pagestyle{plain}
+\setcounter{page}{0}
+\pagenumbering{Roman}
+\input{src-app/abstract}
+\tableofcontents
+\mainmatter
+
+
+\input{src/00-introduction}
+\input{src/01-nuclear-force}
+\input{src/02-chiral-force}
+\input{src/03-many-body}
+\input{src/04-fciqmc}
+\input{src/05-nuclear-matter}
+\input{src/06-finite-nuclei}
+\input{src/07-finite-temperature}
+\input{src/08-hybrid-method}
+\input{src/09-EC}
+\input{src/99-summary}
+\input{src-app/publications}
+\appendix
+\input{src/A1-constants}
+\input{src/A2-pairing}
+\printbibliography[heading=bibintoc]
+\backmatter
+\input{src-app/acknowledge}
+\input{src-app/originauth}
+
+
+\end{document}

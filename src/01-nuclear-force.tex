@@ -1,0 +1,411 @@
+\chapter{核力的基本理论}\label{chap:nuclear-force}
+
+核子系统独特的复杂性来源于核力的复杂性。从现代的物理学观点我们知道，核力的本质是量子色动力学(QCD)，体现为强相互作用在原子核体系中的剩余相互作用，而QCD的低能非微扰特性更是为核力蒙上了一层神秘的面纱。从卢瑟福实验开始，对核力理论的探索贯穿了整个近代物理学的发展历史，直到现在仍是一个极具挑战性的前沿方向。
+
+对各种实验结果的初步分析，我们可以得知核力应该具有以下基本性质：
+
+\begin{enumerate}
+\item 核力是短程强相互作用，有效力程小于3 fm。
+\item 除了中心力外，核力具有明显的自旋相关部分。
+\item 核力具有短程排斥芯，当两核子距离小于0.4 fm时有强烈的排斥势。
+\item 核力具有近似的电荷无关性。
+\end{enumerate}
+
+我们将会在后面看到，手征核力能够自然满足这些基本性质，无需任何额外人为假设。
+
+\section{核力的一般形式}
+核力是一个标量算符，其表达式由动量、自旋和同位旋部分组成，其具有的平移对称、时间反演、空间反射和空间旋转对称性极大地约束了核力的可能算符结构。
+
+\subsection{两体核力的算符结构}
+对于两体核力，可以证明其在自旋空间最多具有6个线性无关的算符结构[\cite{PhysRev.96.1654}]，最一般形式可以写为：
+
+\begin{equation}
+    \begin{aligned}
+        \hat{w}_1&=1\\
+        \hat{w}_2&=\boldsymbol{\sigma}_1\cdot\boldsymbol{\sigma}_2\\
+        \hat{w}_3&=(\boldsymbol{\sigma}_1\cdot\boldsymbol{q})(\boldsymbol{\sigma}_2\cdot\boldsymbol{q})\\
+        \hat{w}_4&=(\boldsymbol{\sigma}_1\cdot\boldsymbol{k})(\boldsymbol{\sigma}_2\cdot\boldsymbol{k})\\
+        \hat{w}_5&=-\mathrm{i}\boldsymbol{S}\cdot(\boldsymbol{q}\times\boldsymbol{k})\\
+        \hat{w}_6&=[\boldsymbol{\sigma}_1\cdot(\boldsymbol{q}\times\boldsymbol{k})][\boldsymbol{\sigma}_2\cdot(\boldsymbol{q}\times\boldsymbol{k})],
+    \end{aligned}
+\end{equation}
+其中我们约定：
+
+\begin{enumerate}
+\item $\boldsymbol{k}_1,\boldsymbol{k}_2(\boldsymbol{k}'_1,\boldsymbol{k}'_2)$：实验室系下两个粒子的单粒子初(末)动量
+\item $\boldsymbol{p}=\boldsymbol{k}_1-\boldsymbol{k}_2(\boldsymbol{p}'=\boldsymbol{k}'_1-\boldsymbol{k}'_2)$：质心系下的两粒子初(末)相对动量
+\item $\boldsymbol{K}=\boldsymbol{k}_1+\boldsymbol{k}_2(\boldsymbol{K}'=\boldsymbol{k}'_1+\boldsymbol{k}'_2)$：实验室系下两粒子初(末)总动量
+\item $\boldsymbol{q}=\boldsymbol{p}'-\boldsymbol{p}$：初末态动量转移
+\item $\boldsymbol{k}=(\boldsymbol{p}'+\boldsymbol{p})/2$：平均（转移）动量
+\item $\boldsymbol{\sigma}_{1,2},\boldsymbol{\tau}_{1,2}$：自旋、同位旋算符
+\item $\boldsymbol{S}=(\boldsymbol{\sigma}_1+\boldsymbol{\sigma}_2)/2$：总自旋算符
+\end{enumerate}
+
+那么两体核力可以展开为：
+
+\begin{equation}
+\hat{V}_{\mathrm{NN}}(\boldsymbol{p}',\boldsymbol{p}) = \sum_{i=1}^{6} f_i(\boldsymbol{p}',\boldsymbol{p}) \hat{w}_i,
+\end{equation}
+前面的$f_i(\boldsymbol{p}',\boldsymbol{p})$是与自旋无关的标量函数。
+
+如果考虑的是散射矩阵元，能量守恒要求$\boldsymbol{k}\cdot\boldsymbol{q}=0$和$(\boldsymbol{k}\times\boldsymbol{q})^2=\boldsymbol{k}^2\cdot\boldsymbol{q}^2$，借助如下恒等式：
+\begin{equation}
+\begin{aligned}
+&(\boldsymbol{\sigma}_1\cdot\boldsymbol{k})(\boldsymbol{\sigma}_2\cdot\boldsymbol{k})\cdot\boldsymbol{q}^2 + (\boldsymbol{\sigma}_1\cdot\boldsymbol{q})(\boldsymbol{\sigma}_2\cdot\boldsymbol{q})\cdot\boldsymbol{k}^2 + (\boldsymbol{\sigma}_1\cdot\boldsymbol{k}\times\boldsymbol{q})(\boldsymbol{\sigma}_2\cdot\boldsymbol{k}\times\boldsymbol{q})\\
+&= (\boldsymbol{\sigma}_1\cdot\boldsymbol{\sigma}_2)(\boldsymbol{k}\times\boldsymbol{q})^2 + (\boldsymbol{k}\cdot\boldsymbol{q})\left[ (\boldsymbol{\sigma}_1\cdot\boldsymbol{k})(\boldsymbol{\sigma}_2\cdot\boldsymbol{q}) + (\boldsymbol{\sigma}_1\cdot\boldsymbol{q})(\boldsymbol{\sigma}_2\cdot\boldsymbol{k}) \right],
+\end{aligned}
+\end{equation}
+可以将独立的自旋算符结构减少为5个。
+
+最终，再考虑到同位旋算符，最终两体核力的算符结构为[\cite{MACHLEIDT20111}]：
+
+\begin{equation}
+\begin{aligned}
+\hat{V}_{\mathrm{NN}}(\boldsymbol{p}',\boldsymbol{p})= & \quad V_C+\boldsymbol{\tau}_1 \cdot \boldsymbol{\tau}_2 W_C\\
+&+\left[V_S+\boldsymbol{\tau}_1 \cdot \boldsymbol{\tau}_2 W_S\right] \boldsymbol{\sigma}_1\cdot\boldsymbol{\sigma}_2 \\
+& +\left[V_{L S}+\boldsymbol{\tau}_1 \cdot \boldsymbol{\tau}_2 W_{L S}\right] \left[-\mathrm{i}\boldsymbol{S}\cdot(\boldsymbol{q}\times\boldsymbol{k}) \right]\\
+& +\left[V_T+\boldsymbol{\tau}_1 \cdot \boldsymbol{\tau}_2 W_T\right] (\boldsymbol{\sigma}_1\cdot\boldsymbol{q})(\boldsymbol{\sigma}_2\cdot\boldsymbol{q}) \\
+& +\left[V_{\sigma L}+\boldsymbol{\tau}_1 \cdot \boldsymbol{\tau}_2 W_{\sigma L}\right] \boldsymbol{\sigma}_1\cdot(\boldsymbol{q}\times\boldsymbol{k})\boldsymbol\,{\sigma}_2\cdot(\boldsymbol{q}\times\boldsymbol{k}).
+\end{aligned}
+\end{equation}
+记$\boldsymbol{\tau}_1 \cdot \boldsymbol{\tau}_2$的矩阵元为$\mathcal{T}$，对比我们之前的定义，有如下对应关系：
+\begin{equation}
+\begin{aligned}
+V_C,W_C &\to f_1,\mathcal{T}f_1\\
+V_S,W_S &\to f_2,\mathcal{T}f_2\\
+V_{LS},W_{LS} &\to f_5,\mathcal{T}f_5\\
+V_{T},W_{T} &\to f_3,\mathcal{T}f_3\\
+V_{\sigma L},W_{\sigma L} &\to f_6,\mathcal{T}f_6.
+\end{aligned}
+\end{equation}
+
+
+\subsection{三体核力的算符结构}
+与两体核力类似，三体核力最初写在相对的Jacobi坐标下。我们定义：
+\begin{enumerate}
+\item $\boldsymbol{k}_1,\boldsymbol{k}_2,\boldsymbol{k}_3(\boldsymbol{k}'_1,\boldsymbol{k}'_2,\boldsymbol{k}'_3)$：实验室系下3个粒子的单粒子初(末)动量
+\item $\boldsymbol{q}_i=\boldsymbol{k}'_i-\boldsymbol{k}_i(i=1,2,3)$：第$i$个粒子的初末动量变化
+\item $\boldsymbol{p},\boldsymbol{q},\boldsymbol{p}',\boldsymbol{q}'$：初末Jacobi动量
+\item $\boldsymbol{K}=\boldsymbol{k}_1+\boldsymbol{k}_2+\boldsymbol{k}_3(\boldsymbol{K}')$：三体初(末)总动量，是守恒量
+\end{enumerate}
+动量的变换关系为：
+\begin{equation}
+\begin{aligned}
+\boldsymbol{q}_1&=\boldsymbol{q}'-\boldsymbol{q}\\
+\boldsymbol{q}_2&=\boldsymbol{p}'-\dfrac{1}{2}\boldsymbol{q}'-\Big(\boldsymbol{p}-\dfrac{1}{2}\boldsymbol{q}\Big)\\
+\boldsymbol{q}_3&=-\boldsymbol{p}'-\dfrac{1}{2}\boldsymbol{q}'-\Big(-\boldsymbol{p}-\dfrac{1}{2}\boldsymbol{q}\Big)
+\end{aligned}
+\end{equation}
+
+对于三体核力，仅仅利用对称性进行约束时，可能的算符结构数目会变得非常多，因此基本无法写出一个普遍的表达式。幸运的是，在手征有效场论的框架下，这些都可以逐阶得到。例如在N$^2$LO阶，出现了如下4种算符结构[\cite{HEBELER20211}]：
+\begin{equation}
+\begin{aligned}
+V_{\text{3N}}=\sum_{(i,j,k)\in \mathcal{I}} \Big[ &
+F_{\text{TPE1}}^{ij}(\boldsymbol{\sigma}_i\cdot \boldsymbol{q}_i) \;(\boldsymbol{\sigma}_j\cdot \boldsymbol{q}_j)\;(\boldsymbol{\tau}_i \cdot \boldsymbol{\tau}_j)\\
++&F_{\text{TPE2}}^{ij}(\boldsymbol{\sigma}_i\cdot \boldsymbol{q}_i) \;(\boldsymbol{\sigma}_j\cdot \boldsymbol{q}_j)\;\boldsymbol{\sigma}_k\cdot (\boldsymbol{q}_i\times \boldsymbol{q}_j)
+\;\boldsymbol{\tau}_k\cdot (\boldsymbol{\tau}_i\times \boldsymbol{\tau}_j)\\
++&F_{\text{OPE}}^{j}(\boldsymbol{\sigma}_j\cdot \boldsymbol{q}_j)\;(\boldsymbol{\sigma}_i\cdot \boldsymbol{q}_j)\;(\boldsymbol{\tau}_i \cdot \boldsymbol{\tau}_j)\\
++&F_{\text{contact}}(\boldsymbol{\tau}_j \cdot \boldsymbol{\tau}_k)
+\Big],
+\end{aligned}
+\end{equation}
+其中指标对$i\neq j\neq k$循环求和：
+\begin{equation}
+\mathcal{I}=\set{(123),(132),(213),(312),(231),(321)}
+\end{equation}
+
+
+\section{表象与矩阵元}
+根据是否进行分波分解，核力的表象分为平面波表象(plane-wave basis)和分波表象(partial-wave basis, LSJ basis, spherical-wave basis)，当然也有诸如螺旋态表象(helicity basis)等表象。核力矩阵元在上述不同表象之间通过正交变换相互联系。动量表象与坐标表象之间则通过傅立叶变换互相联系。在有限核的多体计算中，核力矩阵元需要进一步转到谐振子表象下。
+
+\subsection{平面波表象}
+单粒子自由薛定谔方程的解就是单粒子平面波波函数，对于某一个$i$核子来说，其单体态记为：
+\begin{equation}
+|i\rangle \equiv
+|\boldsymbol{k}_i\sigma_i\tau_i\rangle \equiv |\boldsymbol{k}_i\rangle \otimes |\sigma_i\rangle \otimes |\tau_i\rangle,
+\end{equation}
+$A$体直积态也类似定义为：
+\begin{equation}
+|ij...A\rangle \equiv |i\rangle \otimes |j\rangle \otimes ... \otimes |A\rangle.
+\end{equation}
+比如两体态和三体态：
+\begin{equation}
+\begin{aligned}
+|12\rangle&=|\boldsymbol{k}_1\sigma_1\tau_1\boldsymbol{k}_2\sigma_2\tau_2\rangle,\\
+|123\rangle&=|\boldsymbol{k}_1\sigma_1\tau_1\boldsymbol{k}_2\sigma_2\tau_2\boldsymbol{k}_3\sigma_3\tau_3\rangle.
+\end{aligned}
+\end{equation}
+
+下面我们总结核力的两体、三体平面波矩阵元的流程。
+\begin{enumerate}[label=\sffamily\textbf{[\arabic*]}, noitemsep]
+
+\item 利用Mathematica等符号计算软件求出相对坐标系下的矩阵元表达式，
+\begin{equation}
+\begin{aligned}
+\big\langle\boldsymbol{p}'\sigma'_1\tau'_1\sigma'_2\tau'_2 \big|&V_{\mathrm{NN}} \big|\boldsymbol{p}\sigma_1\tau_1\sigma_2\tau_2\big\rangle,\\
+\big\langle\boldsymbol{p}'\boldsymbol{q}'\sigma'_1\tau'_1\sigma'_2\tau'_2\sigma'_3\tau'_3 \big|&V_{\mathrm{3N}} \big|\boldsymbol{p}\boldsymbol{q}\sigma_1\tau_1\sigma_2\tau_2\sigma_3\tau_3\big\rangle.
+\end{aligned}
+\end{equation}
+注意上面两式中的$\boldsymbol{p}$定义不同，一个是两核子相对动量，一个是Jacobi动量。
+
+\item 借助单体态的正交归一关系$\langle\boldsymbol{K}'|\boldsymbol{K}\rangle=\delta(\boldsymbol{K}'-\boldsymbol{K})/L^3$将矩阵元转到实验室系：
+\begin{equation}
+\begin{aligned}
+&\langle\boldsymbol{k}'_1\sigma'_1\tau'_1\boldsymbol{k}'_2\sigma'_2\tau'_2|V_{\mathrm{NN}}|\boldsymbol{k}_1\sigma_1\tau_1\boldsymbol{k}_2\sigma_2\tau_2 \rangle \\ =\;&\langle\boldsymbol{p}'\sigma'_1\tau'_1\sigma'_2\tau'_2|V_{\mathrm{NN}}|\boldsymbol{p}\sigma_1\tau_1\sigma_2\tau_2\rangle
+\times\dfrac{1}{L^3}\delta(\boldsymbol{K}'-\boldsymbol{K}) \delta_{\tau'_1+\tau'_2,\tau_1+\tau_2},
+\end{aligned}
+\end{equation}
+\begin{equation}
+\begin{aligned}
+&\langle\boldsymbol{k}'_1\sigma'_1\tau'_1\boldsymbol{k}'_2\sigma'_2\tau'_2\boldsymbol{k}'_3\sigma'_3\tau'_3|V_{\mathrm{3N}}|\boldsymbol{k}_1\sigma_1\tau_1\boldsymbol{k}_2\sigma_2\tau_2\boldsymbol{k}_3\sigma_3\tau_3 \rangle \\ =\;&\langle\boldsymbol{p}'\boldsymbol{q}'\sigma'_1\tau'_1\sigma'_2\tau'_2\sigma'_3\tau'_3|V_{\mathrm{3N}}|\boldsymbol{p}\boldsymbol{q}\sigma_1\tau_1\sigma_2\tau_2\sigma_3\tau_3\rangle 
+\times\dfrac{1}{L^3}\delta(\boldsymbol{K}'-\boldsymbol{K}) \delta_{\tau'_1+\tau'_2+\tau'_3,\tau_1+\tau_2+\tau_3}.
+\end{aligned}
+\end{equation}
+
+\item 进行反对称化，其中反对称化算符：
+\begin{equation}
+\mathcal{A}_{12}=1-\mathcal{P}_{12},
+\end{equation}
+\begin{equation}
+\mathcal{A}_{123}=1-\mathcal{P}_{12}-\mathcal{P}_{13}-\mathcal{P}_{23}+\mathcal{P}_{123}+\mathcal{P}_{132}.
+\end{equation}
+最后得到反对称化的矩阵元：
+\begin{equation}
+\bra{12}\bar{V}_{\mathrm{NN}}\ket{34}=\bra{12}V_{\mathrm{NN}}\ket{34}-\bra{12}V_{\mathrm{NN}}\ket{43},
+\end{equation}
+\begin{equation}
+\begin{aligned}
+\bra{123}\bar{V}_{\mathrm{3N}}\ket{456} =\; &\bra{123}V_{\mathrm{3N}}\ket{456} -\bra{123}V_{\mathrm{3N}}\ket{546} -\bra{123}V_{\mathrm{3N}}\ket{654} \\
+-&  \bra{123}V_{\mathrm{3N}}\ket{465} +\bra{123}V_{\mathrm{3N}}\ket{645} +\bra{123}V_{\mathrm{3N}}\ket{564}.
+\end{aligned}
+\end{equation}
+在之后的多体计算中，使用的矩阵元默认都是经过反对称化的，因此以后不做区分。
+
+\end{enumerate}
+
+对于两体核力，可以利用Mathematica把算符结构的自旋同位旋矩阵元的解析表达式直接求出来，之后对于所有的核力形式只需要将前面的标量函数成分辨认出来即可，为编写高性能计算程序提供了极大便利。我们将这种方法称为自动化平面波投影(automated plane-wave projection, aPWP)，相关代码见[\cite{code-apwp}]。
+
+
+\subsection{两体分波表象}
+分波表象是核力理论中最常使用的表象，也是通往多体计算的必经之路，其基本思想就是量子力学散射问题中的分波法。对于有自旋的两粒子系统，我们可以选出力学完备集$\{ \hat{H}_0, \boldsymbol{J}^2, \boldsymbol{J}_z, \boldsymbol{L}^2, \boldsymbol{S}^2, \boldsymbol{S}_1^2, \boldsymbol{S}_2^2\}$, 其中$\hat{H}_0=\boldsymbol{p}^2/2\mu$是相对动能、$\boldsymbol{J}^2$是总角动量、$\boldsymbol{L}^2$是相对轨道角动量、$\boldsymbol{S}^2$是总自旋。对于核物理我们考虑的粒子，单粒子自旋都是$1/2$，因此$\boldsymbol{S}_1^2, \boldsymbol{S}_2^2$略去不写。角动量耦合关系为：
+\begin{equation}
+\boldsymbol{S}=\boldsymbol{S}_1+\boldsymbol{S}_2,
+\end{equation}
+\begin{equation}
+\boldsymbol{J}=\boldsymbol{L}+\boldsymbol{S}.
+\end{equation}
+
+上述力学量的共同本征矢即为所谓的两体分波基矢(LSJ partial-wave basis)，求此基矢下的矩阵元的过程就叫做两体相互作用的分波分解。形式上，将分波基矢记为：
+\begin{equation}
+| p LSJ M_J T T_z \rangle.
+\end{equation}
+
+$LSJ$通常称之为一个角动量分波，有一个更加通用的记号${}^{2S+1}\!L_J$，其中$S=0,1$、轨道角动量$L$用对应的字母SPDFGHIJKLMNOX表示，如$^1\!S_0,^3\!P_0$分波等。泡利原理要求额外的$(-1)^{L+S+T}=-1$。
+
+利用角动量耦合，可以将分波基矢进行角动量解耦，得到：
+\begin{equation}
+\begin{aligned}
+| p LSJ M_J T T_z \rangle = &\sum_{M, m_s,t_z} C_{M(M_J-M)M_J}^{LSJ} C^{\frac{1}{2}\frac{1}{2}S}_{m_s(M_J-M-m_s)(M_J-M)} C_{t_z(T_z-t_z)T_z}^{\frac{1}{2}\frac{1}{2}T} \\
+& | pLM \rangle \otimes \Big| \frac{1}{2}m_s \Big\rangle \otimes \Big| \frac{1}{2}(M_J-M-m_s) \Big\rangle \otimes \Big| \frac{1}{2}t_z \Big\rangle \otimes \Big| \frac{1}{2}(T_z-t_z) \Big\rangle,
+\end{aligned}
+\end{equation}
+其中由于同位旋部分处理起来非常简单，我们先忽略掉同位旋相关部分，有：
+\begin{equation}
+\begin{aligned}
+| p LSJ M_J \rangle = &\sum_{M, m_s} C_{M(M_J-M)M_J}^{LSJ} C^{\frac{1}{2}\frac{1}{2}S}_{m_s(M_J-M-m_s)(M_J-M)} \\
+& | pLM \rangle \otimes \Big| \frac{1}{2}m_s \Big\rangle \otimes \Big| \frac{1}{2}(M_J-M-m_s) \Big\rangle.
+\end{aligned}
+\end{equation}
+
+借助$| pLM \rangle$在动量空间的波函数：
+\begin{equation}
+\langle \boldsymbol{p}'|pLM \rangle = \dfrac{\delta(p'-p)}{p'p} Y_{LM}(\hat{\boldsymbol{p}}'),
+\end{equation}
+可以得到分波表象下相互作用矩阵元的表达式：
+\begin{equation}
+\begin{aligned}
+\langle p' L'S'J' M_{J'} |V_{\mathrm{NN}}| p LSJ M_J \rangle = &\int d\hat{p}' \int d\hat{p} \sum_{M,M',m_s,m_{s'}}\\
+& C_{M'(M_{J'}-M')M_{J'}}^{L'S'J'} C_{M(M_J-M)M_J}^{LSJ}\\
+& C^{\frac{1}{2}\frac{1}{2}S'}_{m_{s'}(M_{J'}-M'-m_{s'})(M_{J'}-M')} C^{\frac{1}{2}\frac{1}{2}S}_{m_s(M_J-M-m_s)(M_J-M)}\\
+& Y_{L'M'}^*(\hat{\boldsymbol{p}}') Y_{LM}(\hat{\boldsymbol{p}})\\
+& \langle \boldsymbol{p}' m_{s'} (M_{J'}-M'-m_{s'}) |V_{\mathrm{NN}}| \boldsymbol{p} m_{s} (M_{J}-M-m_{s}) \rangle,
+\end{aligned}
+\end{equation}
+其中最后一部分就是相对坐标系下的平面波矩阵元$\langle \boldsymbol{p}' \sigma_1' \sigma_2' |V_{\mathrm{NN}}| \boldsymbol{p} \sigma_1 \sigma_2 \rangle$，是非常容易计算的。因为两体核力满足$J,M_{J},S$守恒，实际只需要计算：
+\begin{equation}
+\langle p' L'SJ |V_{\mathrm{NN}}| p LSJ \rangle = \dfrac{1}{2J+1} \sum_{M_J=-J}^{J} \langle p' L'SJ M_{J} |V_{\mathrm{NN}}| p LSJ M_J \rangle,
+\end{equation}
+由于积分号里面成为了一个标量，我们可以把一个4维积分约化为1维积分，选取：
+\begin{equation}
+\boldsymbol{p}=(0,0,p),
+\end{equation}
+\begin{equation}
+\boldsymbol{p}'=(p'\sin \theta',0,p'\cos \theta'),
+\end{equation}
+这样：
+\begin{equation}
+\int d\hat{p}' \int d\hat{p} = 8\pi^2 \int_{-1}^{1} d(\cos\theta'),
+\end{equation}
+得到：
+\begin{equation}
+\begin{aligned}
+\langle p' L'S'J' M_{J'} |V_{\mathrm{NN}}| p LSJ M_J \rangle = &8\pi^2 \int_{-1}^{1} d(\cos\theta') \dfrac{1}{2J+1} \sum_{M_J=-J}^{J} \sum_{M'=-L'}^{L'} \sum_{M=-L}^{L} \sum_{m_{s'}=\pm 1/2} \sum_{m_{s}=\pm 1/2}\\
+& C_{M'(M_{J'}-M')M_{J'}}^{L'S'J'} C_{M(M_J-M)M_J}^{LSJ}\\
+& C^{\frac{1}{2}\frac{1}{2}S'}_{m_{s'}(M_{J'}-M'-m_{s'})(M_{J'}-M')} C^{\frac{1}{2}\frac{1}{2}S}_{m_s(M_J-M-m_s)(M_J-M)}\\
+& Y_{L'M'}^*(\theta',0) Y_{LM}(0,0)\\
+& \langle \boldsymbol{p}' m_{s'} (M_{J'}-M'-m_{s'}) |V_{\mathrm{NN}}| \boldsymbol{p} m_{s} (M_{J}-M-m_{s}) \rangle.
+\end{aligned}
+\end{equation}
+再借助两体相互作用的算符分解，我们记：
+\begin{equation}
+h_i(p'pL'LSJ)=\langle p' L'S'J' M_{J'} |w_i| p LSJ M_J \rangle,
+\end{equation}
+那么最后可以很方便地将任何一个两体相互作用进行分波分解：
+\begin{equation}
+\langle p' L'S'J' M_{J'} |V_{\mathrm{NN}}| p LSJ M_J \rangle =\sum_i f_i h_i(p'pL'LSJ),
+\end{equation}
+只需要辨认出前面标量函数$f_i$是什么就足够了。
+利用Mathematica，可以很方便地将这样的分波分解过程求出最后解析的表达式，并且转化为代码，极大地提高了计算效率和正确性，这样的技术称之为自动化分波分解[\cite{Golak2010}](automated partial-wave decomposition, aPWD)。我们完整编写了整套自动化分解的代码，并开源在了github上[\cite{code-apwd}]。这种方法相比传统的分波分解具有极大优势，并且可以自然延伸到诸如超核核力、其他更复杂算符、其他自旋粒子等场景中。
+
+
+\subsection{三体分波表象}
+在核物理第一性原理计算中，三体力具有十分特殊且重要的地位。而三体力的分波分解，不仅是少体Faddeev方法、多体计算的必经之路，更是整个\textit{ab initio}方法中最困难、最复杂的技术之一。发展出一个精确、高效、系统的三体力分波分解方法，对于推动整个第一性原理的理论进展具有重要的意义。而上一节的自动化分波投影技术，可以被自然拓展到三体力的情况[\cite{Skibiński2011}]。
+
+三体力的分波矩阵元都是在Jacobi坐标下进行计算并储存的，根据角动量耦合的顺序又分为$LS$-scheme和$JJ$-scheme，简写为$\beta$-scheme和$\alpha$-scheme。我们先在$\beta$-scheme下计算三体力矩阵元，再利用角动量耦合转到$\alpha$-scheme。
+
+在$LS$-scheme中我们定义三体分波基矢为：
+\begin{equation}
+|\boldsymbol{p} \boldsymbol{q} \beta\rangle \equiv\left|\boldsymbol{p} \boldsymbol{q}(l \lambda) L\left(s \frac{1}{2}\right) S(L S) J M_J\right\rangle
+ \otimes
+\left|\left(t \frac{1}{2}\right) T m_T\right\rangle,
+\end{equation}
+其中$\boldsymbol{p}, \boldsymbol{q}$为Jacobi动量；$s,l$是$(23)$核子对的总自旋和相对轨道角动量；$\lambda$是$(23)$核子对与1核子之间的相对轨道角动量；$L$是三体总轨道角动量；$J$是三体总角动量。定义三体态的宇称为：
+\begin{equation}
+P=(-1)^{l+\lambda}.
+\end{equation}
+
+三体力分波矩阵元满足如下守恒条件：
+\begin{equation}
+\langle \boldsymbol{p}' \boldsymbol{q}' \beta' |V_{\mathrm{3N}}| \boldsymbol{p} \boldsymbol{q} \beta \rangle = \langle \boldsymbol{p}' \boldsymbol{q}' \beta' |V_{\mathrm{3N}}| \boldsymbol{p} \boldsymbol{q} \beta \rangle \delta_{J'J}\delta_{M_{J'}M_{J}}\delta_{P'P}\delta_{T'T}\delta_{M_{T'}M_{T}},
+\end{equation}
+因此我们后续默认满足这些量子数守恒，并且将矩阵元简记为$G(\beta',\beta)$。
+
+首先单独处理同位旋矩阵元部分，定义：
+\begin{equation}
+I(t'tT)\equiv \left\langle t' T\right|\hat{I}\left|t T\right\rangle,
+\end{equation}
+可以解析地计算出矩阵元的表达式，例如：
+\begin{equation}
+\hat{I}_1=(\boldsymbol{\tau}_2 \cdot \boldsymbol{\tau}_3),
+\end{equation}
+\begin{equation}
+\hat{I}_2=\boldsymbol{\tau}_1\cdot (\boldsymbol{\tau}_2\times \boldsymbol{\tau}_3),
+\end{equation}
+有：
+\begin{equation}
+I_1(t'tT)=(2t(t+1)-3)\,\delta_{t,t'},
+\end{equation}
+\begin{equation}
+I_2(t'tT)=2\sqrt{3}i(-1)^{t}\,\delta_{t+t',1}\delta_{T,1/2},
+\end{equation}
+上述均是由Mathematica符号计算得出，可以保证正确性。
+
+与两体力的分波分解类似，经过角动量耦合的解耦以及分波展开，可以得到：
+\begin{equation}
+\begin{aligned}
+G(\beta',\beta)&=I(t'tT)\cdot\dfrac{1}{2J+1}\sum_{M_J=-J}^{J}\sum_{m_{L'}=-L'}^{L'}\sum_{m_L=-L}^{L}\\
+&\cdot C^{L' S' J}_{  m_{L'} (M_J-m_{L'}) M_J} C^{L S J }_{ m_L (M_J-m_L) M_J}\\
+&\cdot \int d \hat{p}^{\prime} \int d \hat{q}^{\prime} \int d \hat{p} \int d \hat{q}\;
+\mathcal{Y}_{l',\lambda'}^{*L',m_{L'}}(\hat{p}',\hat{q}') \mathcal{Y}_{l,\lambda}^{L,m_{L}}(\hat{p},\hat{q})\\
+&\cdot
+\left\langle s' S^{\prime} (M_J-m_{L^{\prime}}) \right|V_{\mathrm{3N}}\left(\boldsymbol{p}^{\prime}, \boldsymbol{q}^{\prime}, \boldsymbol{p}, \boldsymbol{q}\right)\left|s S (M_J-m_{L})\right\rangle,
+\end{aligned}
+\end{equation}
+其中耦合球谐函数定义为：
+\begin{equation}
+\mathcal{Y}_{l,\lambda}^{L,m_{L}}(\hat{p},\hat{q})=\sum_{m_l=-l}^{l}C^{l\lambda L}_{m_l(m_L-m_l)m_L} Y_{l m_l}(\hat{p})Y_{\lambda(m_L-m_l)}(\hat{q}),
+\end{equation}
+三体自旋耦合态定义为：
+\begin{equation}
+\begin{aligned}
+\left| s S M_S \right\rangle=&
+\sum_{m_1=\pm 1/2}\sum_{m_2=\pm 1/2}
+C^{\frac{1}{2}sS}_{m_1(M_S-m_1)M_S}
+C^{\frac{1}{2}\frac{1}{2}s}_{m_2(M_S-m_1-m_2)(M_S-m_1)}\\
+&\left| \frac{1}{2} m_2 \right\rangle \otimes
+\left| \frac{1}{2}, M_S-m_1-m_2 \right\rangle \otimes
+\left| \frac{1}{2}m_1 \right\rangle.
+\end{aligned}
+\end{equation}
+
+将积分提出来：
+\begin{equation}
+G(\beta',\beta)=\int d \hat{p}^{\prime} \int d \hat{q}^{\prime} \int d \hat{p} \int d \hat{q}\;\tilde{G}(\beta',\beta),
+\end{equation}
+由于积分内是一个标量，可以选取方向：
+\begin{equation}
+\hat{p}=\hat{z},
+\end{equation}
+\begin{equation}
+\phi_q=0,
+\end{equation}
+那么：
+\begin{equation}
+G(\beta',\beta)=8\pi^2 \int \sin \theta_{\hat{q}} \sin \theta_{\hat{p}'} \sin \theta_{\hat{q}'} d\theta_{\hat{q}} d\theta_{\hat{p}'} d\theta_{\hat{q}'} d\phi_{\hat{p}'} d\phi_{\hat{q}'} \;\tilde{G}(\beta',\beta),
+\end{equation}
+其中$\tilde{G}(\beta',\beta)$可以用Mathematica解析求解出表达式：
+\begin{equation}
+\begin{aligned}
+\tilde{G}(\beta',\beta)&=I(t'tT)\cdot\dfrac{1}{2J+1}\sum_{M_J=-J}^{J}\sum_{m_{L'}=-L'}^{L'}\sum_{m_L=-L}^{L} C^{L' S' J}_{  m_{L'} (M_J-m_{L'}) M_J} C^{L S J }_{ m_L (M_J-m_L) M_J}\\
+&\cdot
+\mathcal{Y}_{l',\lambda'}^{*L',m_{L'}}(\hat{p}',\hat{q}') \mathcal{Y}_{l,\lambda}^{L,m_{L}}(\hat{p},\hat{q})
+\Big\langle s' S^{\prime} (M_J-m_{L^{\prime}}) \Big|V_{\mathrm{3N}}\left(\boldsymbol{p}^{\prime}, \boldsymbol{q}^{\prime}, \boldsymbol{p}, \boldsymbol{q}\right)\Big|s S (M_J-m_{L})\Big\rangle.
+\end{aligned}
+\end{equation}
+
+在$JJ$-scheme中我们定义三体分波基矢为：
+\begin{equation}
+|\boldsymbol{p} \boldsymbol{q} \alpha\rangle \equiv\left|\boldsymbol{p} \boldsymbol{q} (ls)j (\lambda\frac{1}{2})j_3 (j j_3)J M_J\right\rangle
+ \otimes
+\left|\left(t \frac{1}{2}\right) T m_T\right\rangle,
+\end{equation}
+可以简记为：
+\begin{equation}
+|\boldsymbol{p} \boldsymbol{q} \alpha\rangle =\left|\boldsymbol{p} \boldsymbol{q} l s j \lambda j_3 t T J \right\rangle,
+\end{equation}
+它与$LS$-scheme之间通过一个9-j系数联系起来：
+\begin{equation}
+|\boldsymbol{p} \boldsymbol{q} \alpha\rangle=\sum_{L,S}\sqrt{\hat{L}\hat{S}\hat{j}\hat{j}_3}
+\left\{\begin{array}{ccc}
+l & s & j \\
+\lambda & \frac{1}{2} & j_3 \\
+L & S & J
+\end{array}\right\}
+|\boldsymbol{p} \boldsymbol{q} \beta\rangle,
+\end{equation}
+因此可以非常方便地求出$LS$-scheme下的三体分波矩阵元$H(\alpha',\alpha)$：
+\begin{equation}
+H(\alpha',\alpha)=
+\sum_{S=1/2}^{3/2}\sum_{L=|J-S|}^{J+S}
+\sum_{S'=1/2}^{3/2}\sum_{L'=|J-S'|}^{J+S'}
+\sqrt{\hat{L}'\hat{L}\hat{S}'\hat{S}\hat{j}'\hat{j}\hat{j}_3'\hat{j}_3}
+\left\{\begin{array}{ccc}
+l' & s' & j' \\
+\lambda' & \frac{1}{2} & j_3' \\
+L' & S' & J
+\end{array}\right\}
+\left\{\begin{array}{ccc}
+l & s & j \\
+\lambda & \frac{1}{2} & j_3 \\
+L & S & J
+\end{array}\right\}
+G(\beta',\beta).
+\end{equation}
+
+我们同样从头编写了上述三体力分波分解的完整代码，并开源到了github上[\cite{code-apwd3}]。据我们所知，此技术之前一直没有任何开源代码。
+
+值得一提的是，出于中重质量核计算收敛性的要求，通常需要计算大量较高分波的三体力矩阵元，而aPWD方法由于包含了一个5维积分，数值计算上的能力并不是很强。为此，发展新的计算方法是极其有必要的。但目前为止此方面的工作极少，只有K. Hebler通过利用手征三体力的另一个隐藏的对称性将5维积分约化为3维积分，将三体力分波分解的数值计算速度提高了两个数量级，成为目前为止最高效的方法[\cite{PhysRevC.91.044001}]。另外，将程序移植到GPU上进行数值积分也可以极大提高计算效率，是一个值得尝试的方向。
+
+\subsection{两体谐振子表象}
+
+\subsection{三体谐振子表象}

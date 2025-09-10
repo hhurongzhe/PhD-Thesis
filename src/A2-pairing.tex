@@ -1,0 +1,22 @@
+\chapter{Richardson模型}
+
+Richardson模型的哈密顿量 [\cite{RevModPhys.76.643}]：
+\begin{equation}
+\hat{H}=\delta \sum_{p=1}^{p_\mathrm{max}} \sum_{\sigma=\uparrow,\downarrow} (p-1)a_{p\sigma}^\dagger a_{p\sigma} -\dfrac{g}{2} \sum_{p,q=1}^{p_\mathrm{max}} a_{p\uparrow}^\dagger a_{p\downarrow}^\dagger a_{q\uparrow} a_{q\downarrow}
+\end{equation}
+不失一般性，令$\delta=1.0$，并选取$p_\mathrm{max}=4$，$A=4$
+的半满情况进行benchmark。
+
+MBPT的各阶贡献有解析表达式：
+\begin{equation}
+E_{\mathrm{MBPT}}^{(2)} = -\frac{g^2 \left(g^2+8 g+14\right)}{g^3+12 g^2+44 g+48}
+\end{equation}
+\begin{equation}
+E_{\mathrm{MBPT}}^{(3)} = -\frac{2 g^3 \left(g^4+16 g^3+93 g^2+232 g+212\right)}{\left(g^3+12 g^2+44
+   g+48\right)^2}
+\end{equation}
+\begin{equation}
+E_{\mathrm{MBPT}}^{(4)} = -\frac{g^4 \left(7 g^6+168 g^5+1652 g^4+8512 g^3+24252 g^2+36320
+   g+22416\right)}{2 \left(g^3+12 g^2+44 g+48\right)^3}
+\end{equation}
+MBPT的各阶修正在$g=-6,-4,-2$处是发散的。
