@@ -1,1 +1,432 @@
 \chapter{全组态量子蒙特卡洛}\label{chap:fciqmc}
+全组态量子蒙特卡洛(Full Configuration-Interaction Quantum Monte Carlo, FCIQMC)是一个组态空间中的量子蒙卡方法，通过在初始态上不断作用虚时投影算符来求解多体系统的基态波函数。
+
+\section{基础算法}
+\subsection{虚时投影}
+FCIQMC的基本原理就是用虚时演化来间接求解多体薛定谔方程。假设我们从一个与基态非正交的初始波函数$\ket{\Psi(\tau=0)}$出发，将其作用虚时投影算符$\hat{P}(\tau)$：
+\begin{equation}
+    \ket{\Psi(\tau)}=e^{-\tau\hat{H}}\ket{\Psi(\tau=0)},
+\end{equation}
+如果我们将初始波函数用$\hat{H}$的本征态进行展开：
+\begin{equation}
+    \ket{\Psi(\tau=0)}=\sum_{n=0} w_n \ket{\Phi_n},
+\end{equation}
+那么有：
+\begin{equation}
+    \ket{\Psi(\tau)}=\sum_{n=0} w_n e^{-\tau E_n}\ket{\Phi_n},
+\end{equation}
+其中$E_n$是$\ket{\Phi_n}$的本征值。很明显，当虚时间$\tau$逐渐增大时，波函数的各种成分都会呈指数衰减，而基态成分的衰减速度是最慢的。为了防止基态成分衰减为0，我们将虚时投影算符修改为：
+\begin{equation}
+    \hat{P}(\tau) = e^{-\tau(\hat{H}-E_0)},
+\end{equation}
+那么除了基态以外，其余激发态成分都会随着$\tau$指数衰减，从而最终得到纯的基态成分：
+\begin{equation}
+    \ket{\Phi_0}\propto \lim_{\tau\to\infty}\ket{\Psi(\tau)}=e^{-\tau(\hat{H}-E_0)}\ket{\Psi(\tau=0)}.
+\end{equation}
+将$\hat{P}(\tau)$对虚时间离散化，并作一阶泰勒展开，得到：
+\begin{equation}
+    \ket{\Psi(\tau+\Delta\tau)}\simeq \big[1-\Delta\tau(\hat{H}-E_0)\big] \ket{\Psi(\tau)},
+\end{equation}
+其中时间间隔需要满足如下条件来保证泰勒展开的收敛性：
+\begin{equation}
+    \Delta\tau\leq \dfrac{2}{E_\mathrm{max}-E_\mathrm{min}}.
+\end{equation}
+其中$E_\mathrm{max}$和$E_\mathrm{min}$分别是系统的最大、最小本征值。注意到，上式对虚时间的离散化虽然引入了一些近似，但是由于近似后的传播子中$\hat{H}$结构的存在，最终投影出来的波函数仍然严格是$\hat{H}$的本征态，也就是在FCIQMC中$\Delta\tau$不会带来任何系统误差。这一特征与其他投影的量子蒙卡方法(如VMC和AFQMC等)具有本质区别。其他量子蒙卡方法对虚时投影算符进行了Suzuki-Trotter分解[\cite{PhysRevC.101.045801}]：
+\begin{equation}
+    e^{-\Delta\tau(\hat{H}-E_0)}\simeq e^{-\frac{\Delta\tau}{2}\hat{V}} e^{-\Delta\tau \hat{T}} e^{-\frac{\Delta\tau}{2}\hat{V}}+\mathcal{O}(\Delta\tau^3),
+\end{equation}
+所以需要逐渐减小$\Delta\tau$做多次计算，将结果外推至$\Delta\tau\to 0$来消除这部分系统误差(也称为Trotter误差)。
+
+回到FCIQMC，首先将未知的$E_0$用一个控制变量$S$来代替，然后将波函数在组态空间进行展开：
+\begin{equation}
+    \ket{\Psi(\tau)}=\sum_i C_i(\tau) \ket{D_i}
+\end{equation}
+就得到了组态系数的演化方程
+\begin{equation}
+    C_i(\tau+\Delta\tau) - C_i(\tau) = -\Delta\tau(H_{ii}-S)C_i(\tau) - \Delta\tau\sum_{j\neq i} H_{ij}C_j(\tau)
+\end{equation}
+
+现在来定义walker来对组态系数进行蒙卡采样：
+\begin{enumerate}
+\item 每个walker都位于某个Slater行列式$\ket{D_i}$上，且具有一个自己的方向$\hat{n}$ (由一个单位复向量定义)。
+\item 设某个Slater行列式$\ket{D_i}$上有$N_{i}$个walker，若所有walker的方向都同为$\hat{n}_i$，那么定义$\ket{D_i}$上walker的总数目为$\hat{N}_i=N_i \hat{n}_i$，是一个复数。
+\item 定义总walker数目为所有组态上walker数目绝对值之和：$N_{\mathrm{w}}=\sum_i |\hat{N}_i|$，是一个实数。
+\end{enumerate}
+
+最终FCIQMC的主方程写为：
+\begin{equation}
+    \hat{N}_i(\tau+\Delta\tau) - \hat{N}_i(\tau) = \textcolor{red}{-\Delta\tau(H_{ii}-S)\hat{N}_i(\tau)} \textcolor{blue}{- \Delta\tau\sum_{j\neq i} H_{ij}\hat{N}_j(\tau)}
+\end{equation}
+
+\subsection{演化算法}
+FCIQMC的关键之一就是设计一套随机算法，使得walker演化在统计学意义上满足主方程。观察可以发现，主方程的左边就是$\ket{D_i}$上walker总数的变化量，而右边则是对变化量的两种贡献，其中红色和蓝色部分分别是对角项和非对角项的贡献，分别对应下面详细说明的对角死亡步骤和繁殖步骤。
+
+对于每个时间间隔$\Delta\tau$，对所有的walker进行一次演化，算法如下：
+\begin{enumerate}
+\item \textbf{diagonal step：}遍历所有walker，对于每个walker（设其位于$\ket{D_i}$上，方向为$\hat{n}_i$），计算概率：
+    \begin{equation}
+        p_\mathrm{death}(i) = \Delta\tau |H_{ii}-S|
+    \end{equation}
+若$H_{ii}-S>0$，那么这个walker以$p_\mathrm{death}(i)$概率死亡；若$H_{ii}-S<0$，那么这个walker以$p_\mathrm{death}(i)$概率克隆。
+
+\item \textbf{spawning step：}遍历所有walker，对于每个walker（设其位于$\ket{D_i}$上，方向为$\hat{n}_i$），通过激发算法随机选出一个与之连接的组态$\ket{D_f}$，以如下概率在$\ket{D_f}$上产生一个新的walker：
+    \begin{equation}
+        p_\mathrm{s}(f|i) = \dfrac{\Delta \tau |H_{fi}|}{p_\mathrm{gen}(f|i)}
+    \end{equation}
+新生成的walker的方向为$-\hat{h}_{fi}\hat{n}_i$，其中$\hat{h}_{fi}=H_{fi}/|H_{fi}|$。
+
+\item \textbf{annihilation step：}收集所有walker，对于位于同一个组态$\ket{D_i}$上的所有walker，将其方向向量求和，得到$\ket{D_i}$的总walker数：$\hat{N}_i=\sum_{\alpha\in\ket{D_i} }\hat{n}_{i,\alpha}=N_i \hat{n}_i$。最后，$\ket{D_i}$上只剩下$N_i$个方向均为$\hat{n}_i$的walker。
+\end{enumerate}
+
+
+\subsection{激发算法}
+
+在FCIQMC中，一个至关重要的算法是spawning step中的激发算法：如何从初态$\ket{D_i}$随机地产生一个末态$\ket{D_s}$。通过对组态相互作用的分析我们知道，对于最高包含三体相互作用的体系，初末态之间只可能相差0,1,2,3个单粒子轨道，而相差0个单粒子轨道就是对角元了，其算法在对角步骤。因此我们仅需考虑三种情况：单激发、双激发算法和三激发。
+
+一个简单的单激发算法：先从$\ket{D_i} = a^\dagger_{\alpha_1} a^\dagger_{\alpha_2} \cdots a^\dagger_{\alpha_n} \ket{0}$中随机选取一个单粒子轨道$\alpha_a$，再将其随机地激发到$\ket{D_i}$中非占据的单粒子轨道$\alpha_b$。但是这个算法有一个问题：$\alpha_b$和$\alpha_a$可能不符合量子数守恒条件，这使得$H_{ji} = \bra{D_j}\hat{H}\ket{D_i} = 0$。虽然不至于造成错误，但是会使得算法空转，严重浪费计算资源。
+
+一个更好的单激发算法是：先从$\ket{D_i}$中随机选取一个单粒子轨道$\alpha_a$，再从非占据轨道中的，满足量子数守恒条件的单粒子轨道中（即所谓单体channel中）随机选取一个组态$\alpha_b$。但是这会产生一个问题：如果当前channel中所有的轨道都是占据的，则没法产生末态。此时的做法是视为正常激发，继续下一个walker的处理。同样，双激发、三激发算法也只在某一个channel中选取激发轨道。下面详细说明激发算法。
+
+当进入激发算法时，随机进入可能的3种激发算法：单激发、双激发、三激发。进入这三种算法的概率满足归一条件：$p_{\mathrm{single}}+p_{\mathrm{double}}+p_{\mathrm{triple}}=1$。
+
+\begin{enumerate}
+\item \textbf{single excite：}给定初态$\ket{D_i}$，随机在$\ket{D_i}$的占据态中挑选出一个单粒子轨道$\alpha_a$，可供挑选的单粒子轨道的可能数为$C_A^1$，其中$A$为体系的总核子数；在$\alpha_a$所处的单体channel中进行筛选，找出所有不在$\ket{D_i}$已经占据的轨道中的单粒子态，这些筛选出来的单粒子态共有$N(b|a)$个；在筛选出来的$N(b|a)$个单粒子态中随机选出一个$\alpha_b$，将初态$\ket{D_i}$的$\alpha_a$激发到$\alpha_b$，得到末态$\ket{D_j}$；此时
+\begin{equation}
+p_{\mathrm{gen}}^{-1}(j|i)=p_{\mathrm{single}}^{-1} C_A^1 N(b|a)
+\end{equation}
+
+
+\item \textbf{double excite：}给定初态$\ket{D_i}$，随机在$\ket{D_i}$的占据态中挑选出两个单粒子轨道$(\alpha_a,\alpha_b)$，可供挑选的两体态的可能数为$C_A^2$；在$(\alpha_a,\alpha_b)$所处的两体channel中进行筛选，找出所有不在$\ket{D_i}$已经占据的轨道中的两体态，这些筛选出来的两体态共有$N(cd|ab)$个；在筛选出来的$N(cd|ab)$个两体态中随机选出一个$(\alpha_c,\alpha_d)$，将初态$\ket{D_i}$的$(\alpha_c,\alpha_d)$激发到$(\alpha_c,\alpha_d)$，得到末态$\ket{D_j}$；此时
+\begin{equation}
+p_{\mathrm{gen}}^{-1}(j|i)=p_{\mathrm{double}}^{-1} C_A^2 N(cd|ab)
+\end{equation}
+
+\item \textbf{triple excite：}给定初态$\ket{D_i}$，随机在$\ket{D_i}$的占据态中挑选出三个单粒子轨道$(\alpha_a,\alpha_b,\alpha_c)$，可供挑选的三体态的可能数为$C_A^3$；在$(\alpha_a,\alpha_b,\alpha_c)$所处的三体channel中进行筛选，找出所有不在$\ket{D_i}$已经占据的轨道中的三体态，这些筛选出来的三体态共有$N(def|abc)$个；在筛选出来的$N(def|abc)$个三体态中随机选出一个$(\alpha_d,\alpha_e,\alpha_f)$，将初态$\ket{D_i}$的$(\alpha_a,\alpha_b,\alpha_c)$激发到$(\alpha_d,\alpha_e,\alpha_f)$，得到末态$\ket{D_j}$；此时
+\begin{equation}
+p_{\mathrm{gen}}^{-1}(j|i)=p_{\mathrm{triple}}^{-1} C_A^3 N(def|abc)
+\end{equation}
+\end{enumerate}
+
+可以证明这样的激发算法在统计学意义上可以回到主方程。
+
+
+\subsection{演化流程}
+FCIQMC算法总共分为几个流程：
+\begin{enumerate}
+\item \textbf{initial condition：}将$N_{\mathrm{ini}}$个walker放置在能量最低的Slater行列式$\ket{D_0}$上，方向向量为$\hat{1}$。
+\item \textbf{warm up period：}设定期望的总walker数目为$N_\mathrm{w}$，固定$S=E_0=\bra{D_0}\hat{H}\ket{D_0}$，进行演化算法，walker数目会呈指数增加，直至达到设定值$N_\mathrm{w}$为止。
+\item \textbf{projection period：}继续进行演化算法，每$A$步按照如下的方式调整$S$的值，使得总walker数目保持稳定：
+\begin{equation}
+S(\tau) = S(\tau - \Delta \tau) - \dfrac{\xi}{A\Delta \tau} \ln{\dfrac{N_\mathrm{w}(\tau)}{N_\mathrm{w}(\tau-A\Delta \tau)}} - \dfrac{\zeta}{A\Delta \tau} \ln{\dfrac{N_\mathrm{w}(\tau)}{N_\mathrm{target}}}.
+\end{equation}
+\item \textbf{statistical period：}当$S(\tau),E(\tau)$大致稳定时，继续进行演化，收集所需要的可观测量的统计数据，最后利用统计学方法求出期望值及统计误差。
+\end{enumerate}
+在实际计算中，一般选择$N_{\mathrm{ini}}=10,\; A=10,\; \xi=0.1,\; \zeta=\xi^2/4$。
+
+\subsection{可观测量}
+在FCIQMC中，直接采样得到的就是波函数的完整组态信息：
+\begin{equation}
+\ket{\Psi(\tau)}=\sum_i N_i(\tau) \ket{D_i},
+\end{equation}
+其他所有物理量都可以用波函数来得到。
+
+对于一个可观测量算符$\hat{O}$，若$[\hat{H},\hat{O}]=0$，即$\hat{O}$与$\hat{H}$对易（如哈密顿量算符$\hat{H}$、总角动量算符$\hat{J}^2$），那么其期望值可以通过projected estimator得到：
+\begin{equation}
+\anglemean{\hat{O}}_{\mathrm{proj}}=\dfrac{\braket{\psi_T}{\hat{O}|\Psi(\tau)}}{\braket{\psi_T}{\Psi(\tau)}}
+\end{equation}
+只需要保证试探波函数$\ket{\psi_T}$与波函数$\ket{\Psi(\tau)}$有重叠。
+
+对于关联较弱的体系，可以选取能量最低的行列式$\ket{D_0}$作为试探波函数，如：
+\begin{equation}
+\anglemean{\hat{H}}_{\mathrm{proj}}=\dfrac{1}{N_0(\tau)}\sum_i H_{0i}N_i(\tau).
+\end{equation}
+可以发现此时波函数中只有与$\ket{D_0}$相连的那些组态才对计算的能量有贡献。并且为了使得计算稳定，需要要求$N_0(\tau)$的值不能太小。
+
+对于组态混合比较明显的体系，选择一个更好的试探波函数能够显著减小统计误差。这样的试探波函数既可以通过其他多体方法计算得到，也可以通过一个$N_\mathrm{w}$较小的FCIQMC预先计算得到。
+
+若$[\hat{H},\hat{O}]\neq 0$，即$\hat{O}$与$\hat{H}$不对易（如半径算符$\hat{r}^2$、密度矩阵），那么其期望值可以通过pure estimator得到：
+\begin{equation}
+\anglemean{\hat{O}}_{\mathrm{pure}}=\dfrac{\braket{\Psi(\tau)}{\hat{O}|\Psi(\tau)}}{\braket{\Psi(\tau)}{\Psi(\tau)}}
+\end{equation}
+为了消除pure estimator中的统计误差，需要使用不同随机数种子计算出的两组非关联的波函数来进行计算：
+\begin{equation}
+\anglemean{\hat{O}}_{\mathrm{pure}}=\dfrac{\braket{\Psi^{(1)}(\tau)}{\hat{O}|\Psi^{(2)}(\tau)}}{\braket{\Psi^{(1)}(\tau)}{\Psi^{(2)}(\tau)}}.
+\end{equation}
+
+其他QMC方法会用到mixed estimator (在FCIQMC中我们从来不使用)：
+\begin{equation}
+\anglemean{\hat{O}}_{\mathrm{mix}}=2\anglemean{\hat{O}}_{\mathrm{pure}}-\anglemean{\hat{O}}_{\mathrm{proj}}
+\end{equation}
+
+\subsection{起始子近似}
+尽管原始版本的FCIQMC算法在小体系中得到了非常成功的应用，但是在大体系的计算中，人们发现需要非常大的walker总数才能够充分压制费米子符号问题，得到收敛的结果。起始子近似(initiator approximation)是将FCIQMC算法应用到较大体系的关键[\cite{10.1063/1.3302277}]，它通过对哈密顿量组态矩阵元进行动态截断，很有效地减小了大部分不重要组态对波函数符号产生的噪声。具体的定义如下。
+
+选定一个起始子阈值$n_\alpha$，若某个组态$\ket{D_i}$上的总walker数目满足$|N_i|>n_\alpha$，则这个组态被定义为一个起始子组态。在演化算法的繁殖步骤中中，如果一个非起始子组态尝试向一个未被占据的组态上产生新的walker，这样的尝试被直接拒接。这相当于对哈密顿量采取了如下的截断：
+\begin{equation}
+\tilde{H}_{ij} =
+\begin{cases}
+0, & \ket{D_j} \text{ is not initiator and } N_i=0,\\
+H_{ij}, & \text{otherwise.}
+\end{cases}
+\end{equation}
+实际计算中我们一般选取$n_\alpha=3$。
+
+i-FCIQMC的主方程实际成为：
+\begin{equation}
+    \hat{N}_i(\tau+\Delta\tau) - \hat{N}_i(\tau) = -\Delta\tau(H_{ii}-S)\hat{N}_i(\tau) - \Delta\tau\sum_{j\neq i} \tilde{H}_{ij}\hat{N}_j(\tau).
+\end{equation}
+
+起始子近似尽管非常有用，但是必然会为计算带来系统误差，需要通过逐渐增加walker总数$N_\mathrm{w}$来系统消除。通过比较不同$n_\alpha$下的计算结果，也可以评估FCIQMC的系统误差。
+
+值得注意的是，上述起始子近似的方案并非唯一。通过借鉴其他方法选取重要组态的方式，可以很好改善起始子近似方案，在保证计算稳定的同时有效减小系统误差。例如，可以利用一个其他的截断的多体方法(如MBPT)，获得一个相对可靠的近似波函数，提取出其中占比较大的那些组态，将其设定为起始子，对于其他组态沿用原本近似方案。与之类似，在SHCI以及其他selected CI方法中，有更多更好的组态挑选方案，这对于FCIQMC应该都是有利的[\cite{10.1063/1.5123146}]。
+
+
+\subsection{自适应偏移}
+在大体系的计算中，起始子近似导致的系统误差通常难以通过简单的增加$N_\mathrm{w}$来直接消除。解决这一问题的其中一种方案是自适应偏移算法(adaptive-shift method)[\cite{10.1063/1.5134006,10.1063/5.0032617}]。首先，我们观察到，起始子近似带来系统误差的主要原因在于，非起始子组态的占据情况被系统低估了。假设有一个非起始子组态$\ket{D_i}$，设已占据组态的空间为$\mathcal{A}$，未占据组态的空间为$\mathcal{R}$，那么$\ket{D_i}$向$\mathcal{A}$上繁殖的walkers都被接受了，而向$\mathcal{R}$上繁殖的walkers都被拒绝了。由于$\mathcal{R}$上的占据情况被系统低估，之后$\mathcal{R}$向$\ket{D_i}$的回流(backflow)也会被低估，进一步导致$\ket{D_i}$本身的占据情况被低估。
+
+如果我们已知$\mathcal{R}$中的真实的组态系数，实际上可以将上述缺失的回流贡献补偿到对角项的贡献中：
+\begin{equation}
+    \hat{N}_i(\tau+\Delta\tau) - \hat{N}_i(\tau) = -\Delta\tau(H_{ii}-S_i^*(\tau))\hat{N}_i(\tau) - \Delta\tau\sum_{j\in \mathcal{A},j\neq i} H_{ij}\hat{N}_j(\tau),
+\end{equation}
+其中
+\begin{equation}
+    S_i^*(\tau) = S(\tau)-\sum_{j\in \mathcal{R}} H_{ij}\dfrac{C_j^*}{C_i^*}.
+\end{equation}
+
+在实际计算中，我们保持所有起始子组态具有共同的$S(\tau)$，而所有非起始子组态$\ket{D_i}$都具有自己的$S_i(\tau)$：
+\begin{equation}
+    S_i(\tau) = f_i\times S(\tau),
+\end{equation}
+其中$f_i$应该反应出这个非起始子组态$\ket{D_i}$被低估的程度。为此，我们对$\ket{D_i}$所发起的繁殖过程进行统计。设某一次向$\ket{D_j}$上尝试了一次繁殖，将这个过程赋予权重：
+\begin{equation}
+    w_{ij} = \dfrac{|H_{ji}|}{H_{jj}-E_0},
+\end{equation}
+其中$E_0$为基态能量，可以取为$S$或$E_{\mathrm{proj}}$。最终$f_i$计算为总接受权重的比例：
+\begin{equation}
+    f_i = \dfrac{\sum_{j\in \text{accepted}} w_{ij}}{\sum_{j\in \text{all}} w_{ij}}.
+\end{equation}
+
+为了给自适应偏移方法引入更多自由度，有时也使用如下方式计算非起始子的局域shift：
+\begin{equation}
+    S_i(\tau) = \Delta + f_i\times[S(\tau)-\Delta],
+\end{equation}
+其中$\Delta$是一个可调参数。
+
+重要的是，当$N_\mathrm{w}$逐渐增大时，所有组态都会逐渐变为起始子组态，保证了最终仍然会回到最初的主方程。并且通过取不同的$\Delta$，计算出的基态能量随$N_\mathrm{w}$曲线有严格的单调关系，使得真实的基态能量一定会被这些曲线包络起来，因此得到一种估计能量下限的方法，这是其他变分方法无法做到的。
+
+值得注意的是，上述权重的计算方式远非唯一，更加合适的计算方法有可能会进一步加速i-FCIQMC中系统误差的消除。
+
+\subsection{统计分析}
+在FCIQMC中，对求出的可观测量进行统计分析时，需要采用分块分析(reblocking analysis)[\cite{10.1063/1.457480}]的方法，而不能简单地直接求标准差，这也是所有MCMC方法的共同要求。下面以基态能量为例，介绍分块分析的方法流程。
+
+\begin{enumerate}
+\item 首先，我们在不同时刻求的了$N$个能量的统计值$E_i$。
+\item 将$N$个数据均分为$N_L$块，每一个块内包含着$L$个统计值。
+\item 对于每一个块$i$，求出这个块内数据的平均值，记为$\bar{E}_i(L)$。
+\item 对所有块内平均值$\bar{E}_i(L)$，求出这$N_L$个平均值的平均值和标准差，分别记为$\bar{E}(L)$和$\sigma(L)$。
+\item 定义分块后能量的统计误差为$\Delta\bar{E}(L)$，对统计误差的这个估计的误差为$\delta\Delta\bar{E}(L)$：
+\begin{equation}
+    \Delta\bar{E}(L) = \dfrac{\sigma(L)}{\sqrt{N_L}},
+\end{equation}
+\begin{equation}
+    \delta\Delta\bar{E}(L) = \dfrac{\sigma(L)}{\sqrt{2N_L(N_L-1)}}.
+\end{equation}
+\item 要求块长度$L$为2的幂次，即$L=2^n$，画出$\Delta\bar{E}(L)$随$L$变化的函数图像，找到$\Delta\bar{E}(L)$的收敛值，作为最终能量标准差的估计值。
+\end{enumerate}
+
+分块分析可以内嵌在FCIQMC代码中，使得可以事先指定所需要的统计精度，实现一定的自动化。我们暂时不采取这种方案，实现了一个python版本，公开在[\cite{code-blocking}]。
+
+作为一个例子，我们使用$N_\mathrm{w}=10^4$个walker、$\Delta\mathrm{N^2LO_{GO}}(450)$相互作用，对密度$\rho=0.16$ fm$^{-3}$的纯中子物质进行了计算。对每核子能量的分块分析如图~\ref{fig:analysis}所示。可以看到，对于这个计算，采用$L_0\simeq 10^3$作为块长度来计算标准差，可以得到收敛的估计值。也可以设计一个自动化寻找收敛误差估计的方法，找到$\Delta\bar{E}(L)$随$L$第一次下降发生的$L_0$处作为用于分块分析的最优块长度。
+
+\begin{figure*}[hbtp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{fig/fig_blocking.pdf}
+    \caption{FCIQMC中的分块分析示例计算，其中$\Delta\bar{S}(L)$和$\Delta\bar{E}(L)$分别代表$S$和投影能量的分块分析结果，误差棒代表标准差的误差$\delta\Delta\bar{S}(L)$和$\delta\Delta\bar{E}(L)$。}
+    \label{fig:analysis}
+\end{figure*}
+
+\subsection{激发态}
+为了在FCIQMC中计算激发态，我们需要同时进行一些独立的虚时演化，在每一步演化结束后立刻对波函数进行Gram-Schmidt正交化，来得到正交的波函数[\cite{10.1063/1.4932595,10.1063/1.4986963}]：
+\begin{equation}
+\ket{\Psi_n} \leftarrow \ket{\Psi_n} -\sum^{n-1}_{m=0}\dfrac{\braket{\Psi^m}{\Psi^n}}{\braket{\Psi^m}{\Psi^m}} \ket{\Psi^m}.
+\end{equation}
+在FCIQMC中利用这种方式计算激发态时，最好优化初始波函数来加快激发态的收敛速度。
+
+
+\section{改进算法}
+起始子近似和自适应偏移已经成为几乎标准的FCIQMC算法的一部分。在此基础上，还有更多更细化的优化方式，旨在进一步减小统计误差和系统误差。
+
+\subsection{起始子优化}
+我们在计算中使用了相干性检验(coherent spawning rule)来减小起始子近似带来的系统误差。具体来说，对于多个非起始子向同一个未占据组态$\ket{D_u}$上的繁殖过程，原本这些过程都是被拒绝的，但是我们计算这些非起始子的总净贡献和绝对贡献之和：
+\begin{equation}
+W_\mathrm{net} = \sum_{i \text{ from non-initiators}} w_{ui},
+\end{equation}
+\begin{equation}
+W_\mathrm{abs} = \sum_{i \text{ from non-initiators}} |w_{ui}|,
+\end{equation}
+其中$w_{ui}$是非起始子$\ket{D_i}$尝试向$\ket{D_u}$上产生的walker数目。然后我们计算这些繁殖过程的总符号相干性：
+\begin{equation}
+\text{Coherence} = W_\mathrm{net}/W_\mathrm{abs},
+\end{equation}
+若$\text{Coherence}\simeq 0$，表明来自各个非起始子的贡献存在强烈的相消干涉，因此这些贡献都应该被拒绝；若$\text{Coherence}\simeq 1$，表明各个贡献的相位高度一致，这些贡献都应该被接受。具体采用多大的阈值比较合适需要在实际计算中进行测试，我们暂时采用的阈值为0.5。
+
+另外，我们也可以在计算过程中追踪组态与重要组态的连接频率，来改进起始子近似。定义每个组态的年龄为：距离上次连接确定性空间以来所经历的演化步数，即
+\begin{equation}
+\tau_D = \text{evolution steps since last connect to deterministic space},
+\end{equation}
+其中确定性空间指的是包含HF组态、HF直接相连组态、起始子组态的集合。
+
+若某个组态的年龄很大，说明其很久没有与重要的组态相连接了，因此调整为非起始子；反之调整为起始子。这种改进的起始子近似可以更加精确地筛选出重要的组态，进一步减小起始子近似带来的系统误差。
+
+\subsection{时间间隔优化}
+在QMC计算中，时间间隔$\Delta\tau$不能过大，否则会导致演化过程中大量walker的产生或激发，导致演化不稳定；也不能过小，否则波函数的投影速度比较慢，增加了演化达到平衡所需步长。在量子化学中通常选取的范围为：$10^{-4}$--$10^{-3}$ zs，在核物理计算中通常选取的范围为：$10^{-7}$--$10^{-6}$ zs。这是由于核物理的能标(MeV)比量子化学的能标(keV)高了大约3个数量级，因此时间间隔对应的要小3个数量级。
+
+$\Delta\tau$有严格的上限要求：
+\begin{equation}
+\Delta\tau < \dfrac{2}{E_{\mathrm{max}}-E_{\mathrm{min}}}.
+\end{equation}
+
+虽然实际上无法精确给出$E_{\mathrm{max}}$和$E_{\mathrm{min}}$，但是可以借助Gershgorin圆盘定理或其他矩阵分析方法来很好地给出近似的估计。对于FCIQMC来说，可以简单地采取如下估计：
+\begin{equation}
+\Delta\tau < \dfrac{2}{E(D_{\mathrm{max}})-E(D_{\mathrm{min}})}
+\end{equation}
+其中$D_{\mathrm{max}}$和$D_{\mathrm{min}}$分别是单粒子能最高和最低的组态。通常来说，这个估计只能给出粗略的上限，实际计算所需要的$\Delta\tau$一般比这个估计值小一两个数量级。
+
+另外有两个更为细致的要求：
+\begin{equation}
+\max_{ij} p_{\mathrm{s}}(j|i) < 1
+\end{equation}
+\begin{equation}
+\max_{i} p_{\mathrm{death}}(i) < 1
+\end{equation}
+第一个要求保证了一个walker不会在其他组态上产生过多walker，导致大量新的组态成为initiator；第二个要求保证了一个walker在对角步骤不会发生符号反转。
+在演化过程中动态监控、实时调整时间间隔，可以极大增强FCIQMC演化的稳定性。
+
+上述限制对于绝大多数使用slater行列式的计算来讲都已经足够，但是如果采用对称性限制的其他基矢，需要对上述要求进行修改，用histogram方法保证固定比例（如99.99\%）的spawn事件满足上述条件，详见[\cite{PhysRevB.99.075119}]。我们在程序中都实现了上述算法，并且发现histogram优化的效果是最佳的。
+
+
+\subsection{激发算法优化}
+在激发算法中，发生双激发的可能情况比单激发的多很多，由于它们之间理应地位平等，所以进入双激发的概率也应当比进入单激发的概率高很多，也就是说：
+\begin{equation}
+p_{\mathrm{single}} \ll p_{\mathrm{double}}
+\end{equation}
+因此可以选择一个简单的一阶近似：
+\begin{equation}
+p_{\mathrm{single}} = \dfrac{1}{1+nN},
+\end{equation}
+\begin{equation}
+p_{\mathrm{double}} = 1-p_{\mathrm{single}},
+\end{equation}
+其中$n$和$N$分别是核子数和单粒子基的数目。
+
+激发算法作为FCIQMC中的最核心算法，是非常灵活的，对于不同物理体系进行合适的调整、优化，也是FCIQMC在不同物理领域获得广泛成功的关键。在基础算法中，在channel中做激发时采取的是均等的概率，这个显然是效率比较低的做法，因为\textit{ab initio}哈密顿量一般是自然稀疏的，对激发过程占主要贡献的激发过程总是比较少的。借助这一先验的知识，我们可以利用哈密顿量矩阵元的数值，来根据重要性挑选激发过程，这就是热浴采样(heat-bath sampling)[\cite{doi:10.1021/acs.jctc.5b01170,10.1063/5.0005754}]。具体来说，在非对角的繁殖步骤中，给定初始组态$\ket{D_i}$，我们令激发算法中挑选出连接组态$\ket{D_j}$的概率正比于组态矩阵元$H_{ji}$：
+\begin{equation}
+p_{\mathrm{gen}}(f|i) = \dfrac{|H_{fi}|}{\sum_k |H_{ki}|}.
+\end{equation}
+这在我们的FCIQMC代码中是很容易实现的，因为本来也需要将哈密顿量在m-scheme下的矩阵元分channel存好，所付出的代价只是内存增加了至少一倍。在量子化学中，一般不会显式储存所有的哈密顿量矩阵元，都是现用现算的，因此会进一步对上式采取一些近似。
+
+以双激发过程为例，再详细解释一下热浴采样算法。首先，我们从初始组态$\ket{D_i}$的占据轨道中，以均等概率随机挑选出一对占据轨道$(a,b)$；然后，在$(a,b)$所在两体channel中，以如下概率挑选出一对非占据轨道$(c,d)$：
+\begin{equation}
+p_{\mathrm{gen}}(cd|ab) = \dfrac{|\braket{cd}{\hat{H}|ab}|}{\sum_{c'd'}|\braket{c'd'}{\hat{H}|ab}|}.
+\end{equation}
+其中在给定概率分布时进行采样的方法叫做别名采样(alias sampling)[\cite{10.1145/355744.355749}]，在计算机、统计学领域有着广泛的应用。我们在代码中自行实现了相应算法，这个算法的效率是$\mathcal{O}(1)$的。
+
+热浴采样算法可以保证贡献最大的那些过程被更加频繁地挑选，使得采样效率得到大幅提高。在实际计算中我们发现，使用热浴采样法进行激发，可以使得计算中的最优$\Delta\tau$增加一到两个数量级，明显缩短了演化达到平衡所需的步数。综合来说，相比于均等概率的激发方式，热浴采样会使得算法的整体效率提升两个数量级以上，因此几乎成为了计算的默认选项。
+
+除此之外，利用对称性来对激发算法进行优化也是一个非常重要的方向。在我们的核物质计算中，通过对哈密顿量矩阵元的分道储存，已经显式考虑了动量守恒和同位旋守恒；在有限核的计算中，则显式考虑了宇称守恒和同位旋守恒。以核物质计算中的双激发过程为例，从一对占据轨道$(a,b)$激发到一对非占据轨道$(c,d)$过程的概率为：
+\begin{equation}
+p(cd,ab) = p(cd|ab)p(ab),
+\end{equation}
+其中$p(ab)$是挑选出$(a,b)$的概率。假如我们还想在挑选出$(a,b)$的过程中考虑其他限制，不妨将这些限制条件记为一个集合$\{\mathcal{C}_1,\mathcal{C}_2,\cdots\}$，例如：
+\begin{equation}
+\mathcal{C}_1 = \text{``nucleon pair have the same spin''},
+\end{equation}
+\begin{equation}
+\mathcal{C}_2 = \text{``nucleon pair have opposite spins''},
+\end{equation}
+那么有：
+\begin{equation}
+p(cd,ab) = p(cd,ab|\mathcal{C}_1)p(\mathcal{C}_1) +p(cd,ab|\mathcal{C}_2)p(\mathcal{C}_2),
+\end{equation}
+\begin{equation}
+p(\mathcal{C}_1)+p(\mathcal{C}_2)=1.
+\end{equation}
+其中：
+\begin{equation}
+p(cd,ab|\mathcal{C}_1) =p(cd|ab)p(ab|\mathcal{C}_1),
+\end{equation}
+\begin{equation}
+p(cd,ab|\mathcal{C}_2) =p(cd|ab)p(ab|\mathcal{C}_2),
+\end{equation}
+这使得我们可以在激发过程中按照选定的限制条件进行选择。
+
+\subsection{自旋纯化}
+自旋纯化(spin purification)是量子化学中常用的一种提高QMC计算精度的方法，其实现方式有很多，例如可以改造哈密顿量：
+\begin{equation}
+\hat{H}'=\hat{H}+\lambda \hat{S}^2
+\end{equation}
+这样就会使得闭壳体系的计算收敛速度变快，并且精度变高，这对于我们的核物质计算应该也是适用的。
+
+对于有限核的计算，我们类似地引入角动量纯化(angular momentum purification)的概念：
+\begin{equation}
+\hat{H}'=\hat{H}+\lambda \hat{J}^2
+\end{equation}
+这样对于$J=0$的基态的计算，由于其他角动量的态都被抬高，计算整体的收敛速度也会加快。
+
+
+\subsection{半随机演化}
+对于大多数体系来说，真实的波函数都是由少数占比较大的组态主导的。借助这个先验的知识，可以设计一套半随机演化的算法(semi-stochastic FCIQMC, S-FCIQMC)[\cite{PhysRevLett.109.230201,10.1063/1.4920975}]，将全空间分为确定性空间和随机空间，分别记为$\mathcal{D}$和$\mathcal{S}$。在做虚时投影时，在$\mathcal{D}$中用矩阵乘法严格进行虚时投影，而在$\mathcal{S}$中采用通常的FCIQMC算法进行随机的虚时投影：
+\begin{equation}
+\hat{P} = \hat{P}^{\mathcal{D}} + \hat{P}^{\mathcal{S}},
+\end{equation}
+其中：
+\begin{equation}
+\hat{P}^{\mathcal{D}} =\sum_{i\in\mathcal{D},j\in\mathcal{D}} P_{ij}\ket{D_i}\bra{D_j},
+\end{equation}
+
+具体的算法流程如下。首先需要确定空间$\mathcal{D}$，它应该由一些重要的组态构成，生成$\mathcal{D}$的方式需要借助一些先验的知识，例如可以简单地规定为HF组态以及与其直接相连的组态，或者在MBPT(2)中有贡献的那些组态。为了使整个FCIQMC方法更加黑箱化，我们先做正常形式的FCIQMC虚时演化，在某一步对所有组态根据占据数的绝对值大小$N_i$进行排序，选择占据最多的那些组态构成$\mathcal{D}$空间，其余组态则都归到$\mathcal{S}$：
+\begin{equation}
+\mathcal{D} = \max_M \big(\{\ket{D_i}\};|N_i|\big),
+\end{equation}
+其中$M=|\mathcal{D}|$为$\mathcal{D}$空间的维数。
+
+在虚时演化算法中，对所有占据组态进行遍历时，假设我们遍历到$\ket{D_i}$，分为以下两种情况：
+\begin{enumerate}
+\item 若$\ket{D_i}\in\mathcal{D}$，则进行正常的随机激发算法。假设某次激发过程中尝试向$\ket{D_j}$繁殖walker，那么这个尝试只有当$\ket{D_j}\in\mathcal{D}$时才能成功，否则这次尝试被拒绝。
+\item 若$\ket{D_i}\notin\mathcal{D}$，则进行确定性的激发算法。遍历$\mathcal{D}$中的所有组态$\ket{D_j}\in\mathcal{D}$，直接令$\ket{D_i}$向$\ket{D_j}$上繁殖$-\Delta\tau(H_{ij}-S\delta_{ij})C_j$个walker。
+\end{enumerate}
+后续对角步骤同样进行，只是对于$\ket{D_i}\notin\mathcal{D}$的情况跳过，因为已经在上面的步骤中做过了。
+
+这样的半随机算法，虽然显著增加了计算量，但是带来的增益是巨大的，既能显著压低随机误差好几个数量级，也有助于减小起始子近似的系统误差、加快波函数的收敛速度。因此，在实际计算中需要尽量使用这个方法。一般来讲，确定空间的维数大约是$|\mathcal{D}|=10^4\sim 10^5$量级。
+
+
+\subsection{试探波函数}
+在FCIQMC中计算投影能量时，一般采用的试探波函数是能量最低的行列式：
+\begin{equation}
+E_{\mathrm{proj}}=\dfrac{\braket{D_0}{\hat{H}|\Psi(\tau)}}{\braket{D_0}{\Psi(\tau)}}.
+\end{equation}
+这种评估方式可以通过采用更加精确的试探波函数来改进[\cite{PhysRevLett.109.230201}]。我们首先定义试探空间$\mathcal{T}$，由$N_{\mathcal{T}}$个重要的组态构成。然后将哈密顿量投影到这个子空间，得到投影哈密顿量$H^{\mathcal{T}}$，并且求得子空间内的本征态和本征值：
+\begin{equation}
+\ket{\Psi^{\mathcal{T}}} = \sum_{i\in \mathcal{T}} C_{i}^{\mathcal{T}} \ket{D_i},
+\end{equation}
+\begin{equation}
+H^{\mathcal{T}} \ket{\Psi^{\mathcal{T}}} = E^{\mathcal{T}}\ket{\Psi^{\mathcal{T}}}.
+\end{equation}
+最后，在计算投影能量时，有：
+\begin{equation}
+E_{\mathrm{trial}} =\dfrac{\braket{\Psi^{\mathcal{T}}}{\hat{H}|\Psi(\tau)}}{\braket{\Psi^{\mathcal{T}}}{\Psi(\tau)}} =\dfrac{\sum_{i\in\mathcal{C}}C_iV_i}{\sum_{i\in\mathcal{T}}C_iC_i^{\mathcal{T}*}},
+\end{equation}
+其中$\mathcal{C}$定义为与$\mathcal{T}$通过一个哈密顿量算符$\hat{H}$相连的所有组态构成的空间，且
+\begin{equation}
+V_i= \sum_{j\in\mathcal{T}} \braket{D_j}{\hat{H}|D_i} C_j^{\mathcal{T}*}.
+\end{equation}
+因为$\mathcal{C}$的维数比$\mathcal{T}$的要大很多，因此这个方法中增加的计算量主要来源于向量$V_i$的相关计算。我们推荐在实际计算中采用的试探空间的维数大约为$|\mathcal{T}|\sim10^2$。对于激发态或组态混合比较强的基态，利用试探波函数计算投影能量可以显著减小统计误差和系统误差。
+
+最后我们用一个实际的例子来展示S-FCIQMC和试探波函数的效果。使用了相互作用$\Delta\mathrm{N^2LO_{GO}} (450)$计算38个核子的纯中子物质，使用$N_\mathrm{w}=10^5$个walker，前面先做正常的全随机的FCIQMC虚时演化，然后在10000步开始做半随机的S-FCIQMC演化，并且使用试探波函数来计算投影能量，其中$|\mathcal{D}|=5000$，$|\mathcal{T}|=100$，投影能量的统计情况如图[\ref{fig:semistochastic}]所示。很明显，改进算法可以显著增强计算的稳定性。
+
+\begin{figure*}[hbtp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{fig/fig_semistochastic.pdf}
+    \caption{S-FCIQMC中的示例计算，其中前半部分使用了全随机的FCIQMC演化算法，后半部分使用了半随机的S-FCIQMC演化算法，并且使用了100维的试探波函数。}
+    \label{fig:semistochastic}
+\end{figure*}

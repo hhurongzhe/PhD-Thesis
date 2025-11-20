@@ -18,8 +18,15 @@ sorting = none, giveninits = true, sortgiveninits = true
 \usepackage{simplewick}
 \usepackage{makecell}
 \usepackage{multirow}
-\usepackage{braket}
+% \usepackage{braket}
 \usepackage{enumitem}
+% 量子力学 bra ket 符号
+\newcommand{\bra}[1]{\langle{#1}|}
+\newcommand{\ket}[1]{|{#1}\rangle}
+\newcommand{\braket}[2]{\langle{#1}|{#2}\rangle}
+% 尖括号平均值
+\newcommand{\anglemean}[1]{\langle{#1}\rangle}
+\DeclareMathOperator{\Tr}{Tr}
 
 % 用来设置附录中代码的样式
 % \usepackage{listings}
@@ -101,11 +108,11 @@ ckeywords = {第一性原理；量子蒙特卡洛；手征核力}, ekeywords = {
 \input{src/02-chiral-force}
 \input{src/03-many-body}
 \input{src/04-fciqmc}
-\input{src/05-nuclear-matter}
-\input{src/06-finite-nuclei}
-\input{src/07-finite-temperature}
-\input{src/08-hybrid-method}
-\input{src/09-EC}
+% \input{src/05-nuclear-matter}
+% \input{src/06-finite-nuclei}
+% \input{src/07-finite-temperature}
+% \input{src/08-hybrid-method}
+% \input{src/09-EC}
 \input{src/99-summary}
 \input{src-app/publications}
 \appendix
