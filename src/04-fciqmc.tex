@@ -266,7 +266,7 @@ W_\mathrm{abs} = \sum_{i \text{ from non-initiators}} |w_{ui}|,
 \end{equation}
 其中$w_{ui}$是非起始子$\ket{D_i}$尝试向$\ket{D_u}$上产生的walker数目。然后我们计算这些繁殖过程的总符号相干性：
 \begin{equation}
-\text{Coherence} = W_\mathrm{net}/W_\mathrm{abs},
+\text{Coherence} = |W_\mathrm{net}|/W_\mathrm{abs},
 \end{equation}
 若$\text{Coherence}\simeq 0$，表明来自各个非起始子的贡献存在强烈的相消干涉，因此这些贡献都应该被拒绝；若$\text{Coherence}\simeq 1$，表明各个贡献的相位高度一致，这些贡献都应该被接受。具体采用多大的阈值比较合适需要在实际计算中进行测试，我们暂时采用的阈值为0.5。
 
@@ -361,7 +361,7 @@ p(cd,ab|\mathcal{C}_2) =p(cd|ab)p(ab|\mathcal{C}_2),
 这使得我们可以在激发过程中按照选定的限制条件进行选择。
 
 \subsection{自旋纯化}
-自旋纯化(spin purification)是量子化学中常用的一种提高QMC计算精度的方法，其实现方式有很多，例如可以改造哈密顿量：
+自旋纯化(spin purification)是量子化学中常用的一种提高QMC计算精度的方法[\cite{doi:10.1021/acs.jpca.2c01338,zhang2025ml}]，其实现方式有很多，例如可以改造哈密顿量：
 \begin{equation}
 \hat{H}'=\hat{H}+\lambda \hat{S}^2
 \end{equation}
@@ -373,9 +373,10 @@ p(cd,ab|\mathcal{C}_2) =p(cd|ab)p(ab|\mathcal{C}_2),
 \end{equation}
 这样对于$J=0$的基态的计算，由于其他角动量的态都被抬高，计算整体的收敛速度也会加快。
 
+在上述纯化方法中，参数$\lambda$一般有一个最优的选取范围，详见[\cite{doi:10.1021/acs.jpca.2c01338}]。
 
 \subsection{半随机演化}
-对于大多数体系来说，真实的波函数都是由少数占比较大的组态主导的。借助这个先验的知识，可以设计一套半随机演化的算法(semi-stochastic FCIQMC, S-FCIQMC)[\cite{PhysRevLett.109.230201,10.1063/1.4920975}]，将全空间分为确定性空间和随机空间，分别记为$\mathcal{D}$和$\mathcal{S}$。在做虚时投影时，在$\mathcal{D}$中用矩阵乘法严格进行虚时投影，而在$\mathcal{S}$中采用通常的FCIQMC算法进行随机的虚时投影：
+对于大多数体系来说，真实的波函数都是由少数占比较大的组态主导的。借助这个先验的知识，可以设计一套半随机演化的算法(semi-stochastic FCIQMC, SS-FCIQMC)[\cite{PhysRevLett.109.230201,10.1063/1.4920975}]，将全空间分为确定性空间和随机空间，分别记为$\mathcal{D}$和$\mathcal{S}$。在做虚时投影时，在$\mathcal{D}$中用矩阵乘法严格进行虚时投影，而在$\mathcal{S}$中采用通常的FCIQMC算法进行随机的虚时投影：
 \begin{equation}
 \hat{P} = \hat{P}^{\mathcal{D}} + \hat{P}^{\mathcal{S}},
 \end{equation}
@@ -422,11 +423,50 @@ V_i= \sum_{j\in\mathcal{T}} \braket{D_j}{\hat{H}|D_i} C_j^{\mathcal{T}*}.
 \end{equation}
 因为$\mathcal{C}$的维数比$\mathcal{T}$的要大很多，因此这个方法中增加的计算量主要来源于向量$V_i$的相关计算。我们推荐在实际计算中采用的试探空间的维数大约为$|\mathcal{T}|\sim10^2$。对于激发态或组态混合比较强的基态，利用试探波函数计算投影能量可以显著减小统计误差和系统误差。
 
-最后我们用一个实际的例子来展示S-FCIQMC和试探波函数的效果。使用了相互作用$\Delta\mathrm{N^2LO_{GO}} (450)$计算38个核子的纯中子物质，使用$N_\mathrm{w}=10^5$个walker，前面先做正常的全随机的FCIQMC虚时演化，然后在10000步开始做半随机的S-FCIQMC演化，并且使用试探波函数来计算投影能量，其中$|\mathcal{D}|=5000$，$|\mathcal{T}|=100$，投影能量的统计情况如图[\ref{fig:semistochastic}]所示。很明显，改进算法可以显著增强计算的稳定性。
+最后我们用一个实际的例子来展示SS-FCIQMC和试探波函数的效果。使用了相互作用$\Delta\mathrm{N^2LO_{GO}} (450)$计算38个核子的纯中子物质，使用$N_\mathrm{w}=10^5$个walker，前面先做正常的全随机的FCIQMC虚时演化，然后在10000步开始做半随机的SS-FCIQMC演化，并且使用试探波函数来计算投影能量，其中$|\mathcal{D}|=5000$，$|\mathcal{T}|=100$，投影能量的统计情况如图[\ref{fig:semistochastic}]所示。很明显，改进算法可以显著增强计算的稳定性。
 
 \begin{figure*}[hbtp]
     \centering
     \includegraphics[width=0.6\textwidth]{fig/fig_semistochastic.pdf}
-    \caption{S-FCIQMC中的示例计算，其中前半部分使用了全随机的FCIQMC演化算法，后半部分使用了半随机的S-FCIQMC演化算法，并且使用了100维的试探波函数。}
+    \caption{SS-FCIQMC中的示例计算，其中前半部分使用了全随机的FCIQMC演化算法，后半部分使用了半随机的SS-FCIQMC演化算法，并且使用了100维的试探波函数。}
     \label{fig:semistochastic}
 \end{figure*}
+
+
+\subsection{微扰修正}
+为了加快起始子近似带来系统误差的收敛速度，除了自适应偏移(AS-FCIQMC)方法外，还有一种利用微扰(second-order Epstein-Nesbet perturbative correction, EN2)来进行修正的方法[\cite{10.1063/1.5037923}]。
+
+具体来说，我们独立进行两个平行的i-FCIQMC演化，在演化的过程中监控被起始子近似拒绝的贡献。在繁殖步骤，对于某一个组态$\ket{D_a}$，若在两个演化中同时有繁殖的贡献被拒绝(即都出现了非起始子组态向未占据组态$\ket{D_a}$尝试繁殖walker的过程)，被拒绝的walker数目贡献记为$S_a^1(\tau)$和$S_a^2(\tau)$。那么对能量的微扰修正为：
+\begin{equation}
+\Delta E_2(\tau) = \dfrac{1}{(\Delta\tau)^2} \sum_a \dfrac{S_a^1(\tau) S_a^2(\tau)}{E_{\mathrm{var}}(\tau)-H_{aa}}.
+\end{equation}
+
+最后在计算pure estimator时，修正后的结果为：
+\begin{equation}
+E_{\mathrm{tot}} = \dfrac{\mathrm{E}[\braket{\Psi^1(\tau)}{\hat{H}|\Psi^2(\tau)}+\Delta E_2(\tau)]}{\mathrm{E}[\braket{\Psi^1(\tau)}{\Psi^2(\tau)}]}.
+\end{equation}
+
+当然类似的还有微扰到三阶的修正形式[\cite{10.1063/5.0022101}]。这种用微扰修正来消除系统误差的优劣势非常明显，优点显然是计算非常可控，具有清晰的物理图像。缺点则是只是对能量期望值的修正，波函数本身仍有系统误差，计算其他观测量的时候应该还需要推导类似的计算公式。无论如何，这种方法也许有它的价值，但是目前从我们的观点来看，自适应偏移方法显然更加优雅。
+
+
+\section{方法特色与优劣势}
+FCIQMC作为量子化学领域新兴的量子蒙卡方法，引领了数十年多体方法的发展潮流，具有一些鲜明的特色以及优劣势。
+
+优势：
+\begin{enumerate}
+\item 相比于其他QMC方法，能够以引入较小系统误差的代价消除费米子符号问题。
+\item 是一个精确的多体方法，通过控制唯一参量$N_\mathrm{w}$即可逐渐消除系统误差。
+\item 直接采样得到波函数的组态信息，很容易计算其他可观测量。
+\item MPI通信只出现在湮灭步骤，具有天然的完美可并行性。
+\item 算法非常灵活，从各个角度很容易对算法进行深度优化。
+\item walker的内存占用极度友好。
+\end{enumerate}
+
+劣势：
+\begin{enumerate}
+\item 核物理计算中无法实现对哈密顿量矩阵元的on-the-fly计算，因此在大规模计算中对哈密顿量的储存很容易导致内存瓶颈。
+\item 对于模型空间很大的体系，有时很难将系统误差控制在较低水平。
+\item 很难计算较多的激发态。
+\end{enumerate}
+
+目前我们在实际计算中遇到的最大困难实际上是多体哈密顿量矩阵元导致的内存瓶颈，暂时也没有很好的解决方法。但是无论如何，FCIQMC具有的优势还是其他方法不可比拟的。
